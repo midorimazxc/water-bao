@@ -26,24 +26,28 @@ export default function Hero() {
     `;
 
     try {
-      await fetch(
-        "https://api.telegram.org/bot8371302783:AAHBG-UFcawgnSVq3BUVN8t-uPeTYt1C_HI/sendMessage",
+      const res = await fetch(
+        "https://dpbyblauovgdabyyrfai.supabase.co/functions/v1/send-telegram",
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            chat_id: "-5255251767",
-            text,
+            message: text,
           }),
         }
       );
+
+      if (!res.ok) {
+        throw new Error("Ошибка сервера");
+      }
 
       alert("Заявка отправлена 🚀");
       setOpen(false);
       setName("");
       setPhone("");
+
     } catch (error) {
       alert("Ошибка отправки ❌");
       console.error(error);
