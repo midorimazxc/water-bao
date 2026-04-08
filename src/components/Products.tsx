@@ -12,207 +12,230 @@ function Fountain3D() {
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.15;
     const W = canvas.parentElement!.clientWidth;
     const H = canvas.parentElement!.clientHeight;
     renderer.setSize(W, H);
 
     const scene = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(38, W / H, 0.1, 100);
-    camera.position.set(1.4, 1.2, 6.0);
-    camera.lookAt(0, 0.2, 0);
+    const camera = new THREE.PerspectiveCamera(32, W / H, 0.1, 100);
+    camera.position.set(1.8, 2.2, 5.8);
+    camera.lookAt(0, 0.5, 0);
 
-    scene.add(new THREE.AmbientLight(0xc8d8e8, 1.8));
-    const key = new THREE.DirectionalLight(0xffffff, 3.5);
-    key.position.set(4, 8, 6);
+    // Lighting
+    scene.add(new THREE.AmbientLight(0xd8e4ec, 1.8));
+    const key = new THREE.DirectionalLight(0xffffff, 4.0);
+    key.position.set(5, 10, 7);
     key.castShadow = true;
+    key.shadow.mapSize.width = 2048;
+    key.shadow.mapSize.height = 2048;
     scene.add(key);
-    const fill = new THREE.DirectionalLight(0x6688aa, 1.5);
-    fill.position.set(-5, 2, -4);
+    const fill = new THREE.DirectionalLight(0x9ab0cc, 2.0);
+    fill.position.set(-6, 3, -4);
     scene.add(fill);
-    const top = new THREE.DirectionalLight(0xddeeff, 2.0);
-    top.position.set(0, 10, 0);
+    const top = new THREE.DirectionalLight(0xeef4ff, 2.5);
+    top.position.set(0, 12, 2);
     scene.add(top);
-    const front = new THREE.PointLight(0xffffff, 1.2, 12);
-    front.position.set(0, 2, 5);
-    scene.add(front);
-    const basinL = new THREE.PointLight(0x88ccff, 2.5, 3);
-    basinL.position.set(0, 2.2, 0.6);
-    scene.add(basinL);
+    const rim = new THREE.DirectionalLight(0xfff8ee, 1.8);
+    rim.position.set(3, 4, 8);
+    scene.add(rim);
+    const bowlGlow = new THREE.PointLight(0xaaddff, 4.0, 3.5);
+    bowlGlow.position.set(0.15, 2.35, 0.6);
+    scene.add(bowlGlow);
 
-    const steelMat = new THREE.MeshStandardMaterial({
-      color: 0xb8c8d0,
-      metalness: 0.85,
-      roughness: 0.18,
-      envMapIntensity: 1.0,
-    });
-    const steelDarkMat = new THREE.MeshStandardMaterial({
-      color: 0x8899a8,
-      metalness: 0.9,
-      roughness: 0.15,
-    });
-    const steelTopMat = new THREE.MeshStandardMaterial({
-      color: 0xc8d8e0,
-      metalness: 0.8,
-      roughness: 0.12,
-    });
+    // Materials
+    const bodyMat = new THREE.MeshStandardMaterial({ color: 0xb8cad4, metalness: 0.82, roughness: 0.22 });
+    const topPlateMat = new THREE.MeshStandardMaterial({ color: 0xc5d5de, metalness: 0.88, roughness: 0.14 });
+    const bowlMat = new THREE.MeshStandardMaterial({ color: 0xd0dde5, metalness: 0.95, roughness: 0.06 });
+    const chromeMat = new THREE.MeshStandardMaterial({ color: 0xe0eaf0, metalness: 0.98, roughness: 0.04 });
+    const chromeDarkMat = new THREE.MeshStandardMaterial({ color: 0x8899aa, metalness: 0.96, roughness: 0.05 });
+    const rubberMat = new THREE.MeshStandardMaterial({ color: 0x1a2028, metalness: 0.0, roughness: 0.95 });
     const waterMat = new THREE.MeshStandardMaterial({
       color: 0x55aadd,
       metalness: 0.0,
-      roughness: 0.05,
+      roughness: 0.02,
       transparent: true,
-      opacity: 0.65,
-      emissive: 0x003355,
-      emissiveIntensity: 0.3,
+      opacity: 0.55,
+      emissive: 0x002244,
+      emissiveIntensity: 0.5,
     });
-    const darkMat = new THREE.MeshStandardMaterial({
-      color: 0x1a2530,
-      metalness: 0.6,
-      roughness: 0.4,
-    });
-    const ventMat = new THREE.MeshStandardMaterial({
-      color: 0x7a8e9a,
-      metalness: 0.7,
-      roughness: 0.35,
-    });
+    const drainMat = new THREE.MeshStandardMaterial({ color: 0x5a6a7a, metalness: 0.9, roughness: 0.15 });
 
     const g = new THREE.Group();
     scene.add(g);
 
-    const bodyGeo = new THREE.BoxGeometry(1.8, 3.6, 1.8);
-    const body = new THREE.Mesh(bodyGeo, steelMat);
-    body.position.y = -0.2;
+    // ── BODY COLUMN ──────────────────────────────────────────────
+    const body = new THREE.Mesh(new THREE.BoxGeometry(1.55, 3.4, 1.55), bodyMat);
+    body.position.y = -0.35;
     body.castShadow = true;
+    body.receiveShadow = true;
     g.add(body);
 
-    const edgeW = 0.04;
-    const edgePositions = [
-      { x: 0.9, z: 0.9 }, { x: -0.9, z: 0.9 },
-      { x: 0.9, z: -0.9 }, { x: -0.9, z: -0.9 },
-    ];
-    edgePositions.forEach(({ x, z }) => {
-      const edge = new THREE.Mesh(
-        new THREE.BoxGeometry(edgeW, 3.62, edgeW),
-        steelTopMat
-      );
-      edge.position.set(x, -0.2, z);
-      g.add(edge);
+    // Vertical edge highlight strips
+    ([ [-0.775, 0.775], [0.775, 0.775], [-0.775, -0.775], [0.775, -0.775] ] as [number,number][]).forEach(([x, z]) => {
+      const e = new THREE.Mesh(new THREE.BoxGeometry(0.03, 3.42, 0.03), topPlateMat);
+      e.position.set(x, -0.35, z);
+      g.add(e);
     });
 
-    const baseGeo = new THREE.BoxGeometry(1.86, 0.12, 1.86);
-    const base = new THREE.Mesh(baseGeo, darkMat);
-    base.position.y = -2.06;
-    g.add(base);
-
-    [[-0.7, -0.82], [0.7, -0.82], [-0.7, 0.82], [0.7, 0.82]].forEach(([x, z]) => {
-      const foot = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.06, 0.07, 0.06, 10),
-        darkMat
-      );
-      foot.position.set(x, -2.15, z);
-      g.add(foot);
-    });
-
-    const topSurfaceGeo = new THREE.BoxGeometry(1.86, 0.1, 1.86);
-    const topSurface = new THREE.Mesh(topSurfaceGeo, steelTopMat);
-    topSurface.position.y = 1.65;
-    g.add(topSurface);
-
-    const basinRimGeo = new THREE.BoxGeometry(1.3, 0.08, 1.1);
-    const basinRim = new THREE.Mesh(basinRimGeo, steelTopMat);
-    basinRim.position.set(-0.05, 1.72, -0.1);
-    g.add(basinRim);
-
-    const basinGeo = new THREE.CylinderGeometry(0.46, 0.38, 0.14, 32);
-    const basin = new THREE.Mesh(basinGeo, steelDarkMat);
-    basin.position.set(-0.05, 1.68, -0.1);
-    g.add(basin);
-
-    const waterGeo = new THREE.CylinderGeometry(0.42, 0.42, 0.03, 32);
-    const water = new THREE.Mesh(waterGeo, waterMat);
-    water.position.set(-0.05, 1.73, -0.1);
-    g.add(water);
-
-    const drainGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.02, 16);
-    const drain = new THREE.Mesh(
-      drainGeo,
-      new THREE.MeshStandardMaterial({ color: 0x445566, metalness: 0.9, roughness: 0.3 })
+    // Bottom base plate
+    const basePlate = new THREE.Mesh(
+      new THREE.BoxGeometry(1.60, 0.06, 1.60),
+      new THREE.MeshStandardMaterial({ color: 0x9aacb8, metalness: 0.75, roughness: 0.35 })
     );
-    drain.position.set(-0.05, 1.62, -0.1);
-    g.add(drain);
+    basePlate.position.y = -2.07;
+    g.add(basePlate);
 
-    const spoutBaseGeo = new THREE.CylinderGeometry(0.05, 0.06, 0.3, 16);
-    const spoutBase = new THREE.Mesh(spoutBaseGeo, steelTopMat);
-    spoutBase.position.set(0.28, 1.82, -0.1);
-    spoutBase.rotation.z = -0.2;
-    g.add(spoutBase);
+    // Rubber feet
+    ([ [-0.6, -0.6], [0.6, -0.6], [-0.6, 0.6], [0.6, 0.6] ] as [number,number][]).forEach(([x, z]) => {
+      const f = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.06, 0.04, 12), rubberMat);
+      f.position.set(x, -2.12, z);
+      g.add(f);
+    });
 
-    const spoutNeckGeo = new THREE.CylinderGeometry(0.04, 0.05, 0.22, 12);
-    const spoutNeck = new THREE.Mesh(spoutNeckGeo, steelTopMat);
-    spoutNeck.position.set(0.18, 1.92, -0.1);
-    spoutNeck.rotation.z = 0.6;
-    g.add(spoutNeck);
+    // ── TOP PLATE ────────────────────────────────────────────────
+    const topPlate = new THREE.Mesh(new THREE.BoxGeometry(1.60, 0.09, 1.60), topPlateMat);
+    topPlate.position.y = 1.425;
+    g.add(topPlate);
 
-    const spoutTipGeo = new THREE.CylinderGeometry(0.025, 0.035, 0.1, 12);
-    const spoutTip = new THREE.Mesh(spoutTipGeo, steelDarkMat);
-    spoutTip.position.set(0.06, 1.98, -0.1);
-    spoutTip.rotation.z = 0.2;
+    // Top rim chrome strip
+    const topRim = new THREE.Mesh(new THREE.BoxGeometry(1.62, 0.025, 1.62), chromeMat);
+    topRim.position.y = 1.465;
+    g.add(topRim);
+
+    // ── BOWL / РАКОВИНА ──────────────────────────────────────────
+    // Outer rim flush with top plate
+    const bowlRim = new THREE.Mesh(new THREE.CylinderGeometry(0.56, 0.58, 0.05, 48), topPlateMat);
+    bowlRim.position.set(-0.05, 1.46, 0.04);
+    g.add(bowlRim);
+
+    // Deep round bowl via lathe — wide at top, curves down to narrow bottom
+    const bowlPts: THREE.Vector2[] = [
+      [0.53, 0.00],
+      [0.52, -0.02],
+      [0.50, -0.06],
+      [0.46, -0.12],
+      [0.38, -0.22],
+      [0.28, -0.32],
+      [0.18, -0.38],
+      [0.10, -0.42],
+      [0.06, -0.44],
+      [0.055, -0.46],
+    ].map(([x, y]) => new THREE.Vector2(x, y));
+    const bowl = new THREE.Mesh(new THREE.LatheGeometry(bowlPts, 48), bowlMat);
+    bowl.position.set(-0.05, 1.46, 0.04);
+    g.add(bowl);
+
+    // Bowl inner bottom cap
+    const bowlBottom = new THREE.Mesh(new THREE.CircleGeometry(0.054, 24), bowlMat);
+    bowlBottom.rotation.x = -Math.PI / 2;
+    bowlBottom.position.set(-0.05, 1.00, 0.04);
+    g.add(bowlBottom);
+
+    // Water surface sitting in bowl
+    const waterDisc = new THREE.Mesh(new THREE.CircleGeometry(0.48, 48), waterMat);
+    waterDisc.rotation.x = -Math.PI / 2;
+    waterDisc.position.set(-0.05, 1.40, 0.04);
+    g.add(waterDisc);
+
+    // Drain ring at center of bowl
+    const drainRing = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.055, 0.018, 20), drainMat);
+    drainRing.position.set(-0.05, 1.002, 0.04);
+    g.add(drainRing);
+    // Drain crosshatch lines
+    for (let i = 0; i < 4; i++) {
+      const bar = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.006, 0.012), chromeDarkMat);
+      bar.rotation.y = i * Math.PI / 4;
+      bar.position.set(-0.05, 1.012, 0.04);
+      g.add(bar);
+    }
+
+    // ── FAUCET / КРАН ─────────────────────────────────────────────
+    // Base post on top plate, to the right of bowl
+    const fBase = new THREE.Mesh(new THREE.CylinderGeometry(0.048, 0.055, 0.12, 16), chromeMat);
+    fBase.position.set(0.42, 1.52, 0.04);
+    g.add(fBase);
+
+    // Base flange
+    const flange = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.018, 16), chromeMat);
+    flange.position.set(0.42, 1.48, 0.04);
+    g.add(flange);
+
+    // Neck — slight forward lean
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.036, 0.18, 14), chromeMat);
+    neck.position.set(0.42, 1.63, 0.04);
+    neck.rotation.z = 0.12;
+    g.add(neck);
+
+    // Elbow torus curve
+    const elbowGeo = new THREE.TorusGeometry(0.06, 0.030, 12, 24, Math.PI * 0.55);
+    const elbow = new THREE.Mesh(elbowGeo, chromeMat);
+    elbow.position.set(0.38, 1.72, 0.04);
+    elbow.rotation.z = Math.PI * 0.6;
+    elbow.rotation.y = Math.PI / 2;
+    g.add(elbow);
+
+    // Spout horizontal pipe toward bowl
+    const spout = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.030, 0.22, 12), chromeMat);
+    spout.position.set(0.20, 1.75, 0.04);
+    spout.rotation.z = Math.PI / 2;
+    g.add(spout);
+
+    // Spout tip angled slightly down
+    const spoutTip = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.026, 0.07, 12), chromeDarkMat);
+    spoutTip.position.set(0.06, 1.73, 0.04);
+    spoutTip.rotation.z = 0.35;
     g.add(spoutTip);
 
-    const leverGeo = new THREE.BoxGeometry(0.22, 0.06, 0.06);
-    const lever = new THREE.Mesh(leverGeo, steelDarkMat);
-    lever.position.set(0.26, 2.0, -0.1);
-    lever.rotation.z = 0.3;
-    g.add(lever);
+    // Aerator ring
+    const aerator = new THREE.Mesh(new THREE.TorusGeometry(0.022, 0.006, 8, 16), chromeDarkMat);
+    aerator.position.set(0.04, 1.715, 0.04);
+    aerator.rotation.z = Math.PI / 2;
+    g.add(aerator);
 
-    const leverTipGeo = new THREE.SphereGeometry(0.04, 10, 10);
-    const leverTip = new THREE.Mesh(leverTipGeo, steelDarkMat);
-    leverTip.position.set(0.38, 1.98, -0.1);
-    g.add(leverTip);
+    // ── LEVER / РЫЧАГ ─────────────────────────────────────────────
+    const leverArm = new THREE.Mesh(new THREE.BoxGeometry(0.055, 0.15, 0.038), chromeMat);
+    leverArm.position.set(0.44, 1.67, 0.04);
+    leverArm.rotation.z = -0.3;
+    g.add(leverArm);
 
-    for (let i = 0; i < 7; i++) {
-      const slat = new THREE.BoxGeometry(0.7, 0.04, 0.05);
-      const sl = new THREE.Mesh(slat, ventMat);
-      sl.position.set(0.5, -1.5 + i * 0.1, 0.92);
-      sl.rotation.x = -0.15;
-      g.add(sl);
-    }
+    const leverTop = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.032, 0.055), chromeDarkMat);
+    leverTop.position.set(0.46, 1.74, 0.04);
+    leverTop.rotation.z = -0.3;
+    g.add(leverTop);
 
-    for (let i = 0; i < 7; i++) {
-      const slat = new THREE.BoxGeometry(0.05, 0.04, 0.65);
-      const sl = new THREE.Mesh(slat, ventMat);
-      sl.position.set(0.93, -1.5 + i * 0.1, 0.4);
-      sl.rotation.z = 0.15;
-      g.add(sl);
-    }
-
-    const ventFrameGeo = new THREE.BoxGeometry(0.74, 0.74, 0.04);
-    const ventFrame = new THREE.Mesh(
-      ventFrameGeo,
-      new THREE.MeshStandardMaterial({ color: 0x99aabb, metalness: 0.7, roughness: 0.3 })
+    // Branding disc on faucet
+    const brand = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.022, 0.022, 0.005, 12),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xcccccc, emissiveIntensity: 0.4, roughness: 0.3 })
     );
-    ventFrame.position.set(0.5, -1.52, 0.91);
-    g.add(ventFrame);
+    brand.rotation.x = Math.PI / 2;
+    brand.position.set(0.48, 1.62, 0.076);
+    g.add(brand);
 
+    // ── SHADOW ────────────────────────────────────────────────────
     const shadow = new THREE.Mesh(
-      new THREE.CircleGeometry(1.4, 48),
-      new THREE.MeshStandardMaterial({ color: 0x020810, transparent: true, opacity: 0.35 })
+      new THREE.CircleGeometry(1.2, 48),
+      new THREE.MeshStandardMaterial({ color: 0x020810, transparent: true, opacity: 0.22 })
     );
     shadow.rotation.x = -Math.PI / 2;
-    shadow.position.y = -2.18;
-    shadow.receiveShadow = true;
+    shadow.position.y = -2.14;
     g.add(shadow);
 
-    const dCount = 40;
-    const dPos = new Float32Array(dCount * 3);
+    // ── WATER STREAM PARTICLES ─────────────────────────────────────
+    // Parabolic arc from spout tip into bowl
+    const DROPS = 60;
+    const dPos = new Float32Array(DROPS * 3);
     const dVel: Array<{ vx: number; vy: number; vz: number; life: number }> = [];
-    for (let i = 0; i < dCount; i++) {
-      dPos[i * 3] = 0.06;
-      dPos[i * 3 + 1] = 1.98;
-      dPos[i * 3 + 2] = -0.1;
+    for (let i = 0; i < DROPS; i++) {
+      dPos[i * 3] = 0.04;
+      dPos[i * 3 + 1] = 1.715;
+      dPos[i * 3 + 2] = 0.04;
       dVel.push({
-        vx: (Math.random() - 0.6) * 0.035,
-        vy: -0.018 - Math.random() * 0.02,
-        vz: (Math.random() - 0.5) * 0.015,
+        vx: -0.018 - Math.random() * 0.01,
+        vy: -0.012 - Math.random() * 0.014,
+        vz: (Math.random() - 0.5) * 0.004,
         life: Math.random(),
       });
     }
@@ -220,72 +243,117 @@ function Fountain3D() {
     dGeo.setAttribute('position', new THREE.BufferAttribute(dPos, 3));
     const dPts = new THREE.Points(
       dGeo,
-      new THREE.PointsMaterial({
-        color: 0x99ddff,
-        size: 0.04,
-        transparent: true,
-        opacity: 0.8,
-        sizeAttenuation: true,
-      })
+      new THREE.PointsMaterial({ color: 0xbbecff, size: 0.032, transparent: true, opacity: 0.85, sizeAttenuation: true })
     );
     g.add(dPts);
 
-    // === INTERACTION — full 360° rotation ===
-    let drag = false, pX = 0, pY = 0, rotY = -0.3, rotX = 0.06, autoR = true;
+    // Splash drops at bowl impact point
+    const SPLASH = 25;
+    const sPos = new Float32Array(SPLASH * 3);
+    const sVel: Array<{ vx: number; vy: number; vz: number; life: number }> = [];
+    for (let i = 0; i < SPLASH; i++) {
+      const a = Math.random() * Math.PI * 2;
+      const r = Math.random() * 0.12;
+      sPos[i * 3] = -0.05 + Math.cos(a) * r;
+      sPos[i * 3 + 1] = 1.42;
+      sPos[i * 3 + 2] = 0.04 + Math.sin(a) * r;
+      sVel.push({ vx: (Math.random() - 0.5) * 0.009, vy: 0.003 + Math.random() * 0.005, vz: (Math.random() - 0.5) * 0.009, life: Math.random() });
+    }
+    const sGeo = new THREE.BufferGeometry();
+    sGeo.setAttribute('position', new THREE.BufferAttribute(sPos, 3));
+    const sPts = new THREE.Points(
+      sGeo,
+      new THREE.PointsMaterial({ color: 0xddf4ff, size: 0.018, transparent: true, opacity: 0.5, sizeAttenuation: true })
+    );
+    g.add(sPts);
+
+    // ── INTERACTION ───────────────────────────────────────────────
+    let drag = false, pX = 0, pY = 0, rotY = 0.35, rotX = 0.12, autoR = true;
+    let touchStartedOnCanvas = false;
 
     const handleMouseDown = (e: MouseEvent) => { drag = true; autoR = false; pX = e.clientX; pY = e.clientY; };
-    const handleTouchStart = (e: TouchEvent) => { drag = true; autoR = false; pX = e.touches[0].clientX; pY = e.touches[0].clientY; };
-    const handleMouseUp = () => { drag = false; setTimeout(() => (autoR = true), 4000); };
-    const handleTouchEnd = () => { drag = false; setTimeout(() => (autoR = true), 4000); };
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartedOnCanvas = true;
+      drag = true; autoR = false;
+      pX = e.touches[0].clientX; pY = e.touches[0].clientY;
+    };
+    const handleMouseUp = () => { drag = false; setTimeout(() => (autoR = true), 4500); };
+    const handleTouchEnd = () => { touchStartedOnCanvas = false; drag = false; setTimeout(() => (autoR = true), 4500); };
     const handleMouseMove = (e: MouseEvent) => {
       if (!drag) return;
-      rotY += (e.clientX - pX) * 0.012;
-      rotX += (e.clientY - pY) * 0.012;
+      rotY += (e.clientX - pX) * 0.010;
+      rotX += (e.clientY - pY) * 0.008;
+      rotX = Math.max(-0.45, Math.min(0.65, rotX));
       pX = e.clientX;
       pY = e.clientY;
     };
     const handleTouchMove = (e: TouchEvent) => {
+      if (!touchStartedOnCanvas) return;
+      e.preventDefault();
       if (!drag) return;
-      rotY += (e.touches[0].clientX - pX) * 0.012;
-      rotX += (e.touches[0].clientY - pY) * 0.012;
+      rotY += (e.touches[0].clientX - pX) * 0.010;
+      rotX += (e.touches[0].clientY - pY) * 0.008;
+      rotX = Math.max(-0.45, Math.min(0.65, rotX));
       pX = e.touches[0].clientX;
       pY = e.touches[0].clientY;
     };
 
     canvas.addEventListener('mousedown', handleMouseDown);
-    canvas.addEventListener('touchstart', handleTouchStart);
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
     window.addEventListener('mouseup', handleMouseUp);
     window.addEventListener('touchend', handleTouchEnd);
     window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('touchmove', handleTouchMove);
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
 
     let T = 0;
     const animate = () => {
       requestAnimationFrame(animate);
       T += 0.016;
-      if (autoR) rotY += 0.005;
+      if (autoR) rotY += 0.0035;
       g.rotation.y = rotY;
       g.rotation.x = rotX;
 
-      const p = dPts.geometry.attributes.position;
-      for (let i = 0; i < dCount; i++) {
+      // Stream particles
+      const dp = dPts.geometry.attributes.position;
+      for (let i = 0; i < DROPS; i++) {
         dVel[i].life += 0.022;
         if (dVel[i].life > 1) {
           dVel[i].life = 0;
-          dVel[i].vx = (Math.random() - 0.6) * 0.035;
-          dVel[i].vy = -0.016 - Math.random() * 0.018;
-          dVel[i].vz = (Math.random() - 0.5) * 0.015;
-          p.setXYZ(i, 0.06, 1.98, -0.1);
+          dVel[i].vx = -0.017 - Math.random() * 0.009;
+          dVel[i].vy = -0.011 - Math.random() * 0.013;
+          dVel[i].vz = (Math.random() - 0.5) * 0.004;
+          dp.setXYZ(i, 0.04, 1.715, 0.04);
         } else {
-          p.setX(i, p.getX(i) + dVel[i].vx * 0.5);
-          p.setY(i, p.getY(i) + dVel[i].vy);
-          p.setZ(i, p.getZ(i) + dVel[i].vz * 0.5);
-          if (p.getY(i) < 1.64) dVel[i].life = 0.9;
+          dp.setX(i, dp.getX(i) + dVel[i].vx * 0.5);
+          dp.setY(i, dp.getY(i) + dVel[i].vy);
+          dp.setZ(i, dp.getZ(i) + dVel[i].vz * 0.3);
+          if (dp.getY(i) < 1.41) dVel[i].life = 0.88;
         }
       }
-      p.needsUpdate = true;
-      water.position.y = 1.73 + Math.sin(T * 1.8) * 0.005;
-      basinL.intensity = 2.2 + Math.sin(T * 2.2) * 0.4;
+      dp.needsUpdate = true;
+
+      // Splash particles
+      const sp = sPts.geometry.attributes.position;
+      for (let i = 0; i < SPLASH; i++) {
+        sVel[i].life += 0.028;
+        if (sVel[i].life > 1) {
+          sVel[i].life = 0;
+          const a = Math.random() * Math.PI * 2;
+          const r = Math.random() * 0.08;
+          sp.setXYZ(i, -0.05 + Math.cos(a) * r, 1.42, 0.04 + Math.sin(a) * r);
+          sVel[i].vx = (Math.random() - 0.5) * 0.008;
+          sVel[i].vy = 0.003 + Math.random() * 0.004;
+          sVel[i].vz = (Math.random() - 0.5) * 0.008;
+        } else {
+          sp.setX(i, sp.getX(i) + sVel[i].vx);
+          sp.setY(i, sp.getY(i) + sVel[i].vy);
+          sp.setZ(i, sp.getZ(i) + sVel[i].vz);
+        }
+      }
+      sp.needsUpdate = true;
+
+      waterDisc.position.y = 1.395 + Math.sin(T * 1.4) * 0.003;
+      bowlGlow.intensity = 3.5 + Math.sin(T * 2.0) * 0.7;
       renderer.render(scene, camera);
     };
     animate();
@@ -296,7 +364,7 @@ function Fountain3D() {
       window.removeEventListener('mouseup', handleMouseUp);
       window.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('touchmove', handleTouchMove);
+      canvas.removeEventListener('touchmove', handleTouchMove);
     };
   }, []);
 
@@ -337,89 +405,46 @@ function Purifier3D() {
     panelL.position.set(0, 1.0, 3);
     scene.add(panelL);
 
-    const whiteMat = new THREE.MeshStandardMaterial({
-      color: 0xf0f2f4,
-      metalness: 0.05,
-      roughness: 0.35,
-    });
-    const blackMat = new THREE.MeshStandardMaterial({
-      color: 0x0d1318,
-      metalness: 0.3,
-      roughness: 0.25,
-    });
-    const silverMat = new THREE.MeshStandardMaterial({
-      color: 0x8899aa,
-      metalness: 0.85,
-      roughness: 0.15,
-    });
-    const redIndicator = new THREE.MeshStandardMaterial({
-      color: 0xff2200,
-      emissive: 0xcc1100,
-      emissiveIntensity: 1.0,
-      roughness: 0.1,
-    });
-    const yellowIndicator = new THREE.MeshStandardMaterial({
-      color: 0xddaa00,
-      emissive: 0xaa8800,
-      emissiveIntensity: 0.9,
-      roughness: 0.1,
-    });
-    const blueIndicator = new THREE.MeshStandardMaterial({
-      color: 0x0088ff,
-      emissive: 0x0055cc,
-      emissiveIntensity: 1.0,
-      roughness: 0.1,
-    });
-    const ventMat = new THREE.MeshStandardMaterial({
-      color: 0xd0d5da,
-      metalness: 0.1,
-      roughness: 0.5,
-    });
+    const whiteMat = new THREE.MeshStandardMaterial({ color: 0xf0f2f4, metalness: 0.05, roughness: 0.35 });
+    const blackMat = new THREE.MeshStandardMaterial({ color: 0x0d1318, metalness: 0.3, roughness: 0.25 });
+    const silverMat = new THREE.MeshStandardMaterial({ color: 0x8899aa, metalness: 0.85, roughness: 0.15 });
+    const redIndicator = new THREE.MeshStandardMaterial({ color: 0xff2200, emissive: 0xcc1100, emissiveIntensity: 1.0, roughness: 0.1 });
+    const yellowIndicator = new THREE.MeshStandardMaterial({ color: 0xddaa00, emissive: 0xaa8800, emissiveIntensity: 0.9, roughness: 0.1 });
+    const blueIndicator = new THREE.MeshStandardMaterial({ color: 0x0088ff, emissive: 0x0055cc, emissiveIntensity: 1.0, roughness: 0.1 });
+    const ventMat = new THREE.MeshStandardMaterial({ color: 0xd0d5da, metalness: 0.1, roughness: 0.5 });
 
     const g = new THREE.Group();
     scene.add(g);
 
-    const lowerGeo = new THREE.BoxGeometry(1.75, 2.8, 1.2);
-    const lower = new THREE.Mesh(lowerGeo, whiteMat);
+    const lower = new THREE.Mesh(new THREE.BoxGeometry(1.75, 2.8, 1.2), whiteMat);
     lower.position.y = -0.8;
     lower.castShadow = true;
     g.add(lower);
 
-    const upperGeo = new THREE.BoxGeometry(1.75, 1.6, 1.2);
-    const upper = new THREE.Mesh(upperGeo, whiteMat);
+    const upper = new THREE.Mesh(new THREE.BoxGeometry(1.75, 1.6, 1.2), whiteMat);
     upper.position.y = 1.1;
     g.add(upper);
 
-    const divGeo = new THREE.BoxGeometry(1.77, 0.04, 1.22);
     const div = new THREE.Mesh(
-      divGeo,
+      new THREE.BoxGeometry(1.77, 0.04, 1.22),
       new THREE.MeshStandardMaterial({ color: 0xccced0, metalness: 0.1, roughness: 0.5 })
     );
     div.position.y = 0.3;
     g.add(div);
 
-    const panelGeo = new THREE.BoxGeometry(1.6, 1.5, 0.08);
-    const panel = new THREE.Mesh(panelGeo, blackMat);
+    const panel = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.5, 0.08), blackMat);
     panel.position.set(0, 1.1, 0.64);
     g.add(panel);
 
-    const panelBorderGeo = new THREE.BoxGeometry(1.63, 1.53, 0.06);
     const panelBorder = new THREE.Mesh(
-      panelBorderGeo,
-      new THREE.MeshStandardMaterial({
-        color: 0x1a2535,
-        emissive: 0x001133,
-        emissiveIntensity: 0.3,
-        transparent: true,
-        opacity: 0.8,
-      })
+      new THREE.BoxGeometry(1.63, 1.53, 0.06),
+      new THREE.MeshStandardMaterial({ color: 0x1a2535, emissive: 0x001133, emissiveIntensity: 0.3, transparent: true, opacity: 0.8 })
     );
     panelBorder.position.set(0, 1.1, 0.62);
     g.add(panelBorder);
 
-    const logoAreaGeo = new THREE.BoxGeometry(0.7, 0.14, 0.03);
     const logoArea = new THREE.Mesh(
-      logoAreaGeo,
+      new THREE.BoxGeometry(0.7, 0.14, 0.03),
       new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xaaaaaa, emissiveIntensity: 0.5 })
     );
     logoArea.position.set(0, 1.78, 0.69);
@@ -441,26 +466,18 @@ function Purifier3D() {
     ];
 
     indicatorColors.forEach(({ x, mat, col }) => {
-      const rod = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.025, 0.025, 0.55, 12),
-        mat
-      );
+      const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.55, 12), mat);
       rod.position.set(x, 1.4, 0.7);
       g.add(rod);
-
       const rodLight = new THREE.PointLight(col, 0.8, 1.5);
       rodLight.position.set(x, 1.4, 0.8);
       scene.add(rodLight);
     });
 
     indicatorColors.forEach(({ x }) => {
-      const housing = new THREE.Mesh(
-        new THREE.CylinderGeometry(0.07, 0.08, 0.3, 16),
-        silverMat
-      );
+      const housing = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.08, 0.3, 16), silverMat);
       housing.position.set(x, 1.05, 0.72);
       g.add(housing);
-
       const tip = new THREE.Mesh(
         new THREE.CylinderGeometry(0.025, 0.035, 0.12, 12),
         new THREE.MeshStandardMaterial({ color: 0x556677, metalness: 0.9, roughness: 0.1 })
@@ -468,19 +485,16 @@ function Purifier3D() {
       tip.position.set(x, 0.95, 0.78);
       tip.rotation.x = Math.PI / 2;
       g.add(tip);
-
-      const btnGeo = new THREE.BoxGeometry(0.16, 0.1, 0.06);
       const btn = new THREE.Mesh(
-        btnGeo,
+        new THREE.BoxGeometry(0.16, 0.1, 0.06),
         new THREE.MeshStandardMaterial({ color: 0xd0d8e0, metalness: 0.3, roughness: 0.4 })
       );
       btn.position.set(x, 0.83, 0.72);
       g.add(btn);
     });
 
-    const trayGeo = new THREE.BoxGeometry(1.5, 0.06, 0.45);
     const tray = new THREE.Mesh(
-      trayGeo,
+      new THREE.BoxGeometry(1.5, 0.06, 0.45),
       new THREE.MeshStandardMaterial({ color: 0xc0c8d0, metalness: 0.6, roughness: 0.3 })
     );
     tray.position.set(0, 0.72, 0.72);
@@ -495,23 +509,20 @@ function Purifier3D() {
       g.add(bar);
     }
 
-    // === BOTTOM VENT — back panel only (side grille removed) ===
     for (let i = 0; i < 6; i++) {
-      const slat = new THREE.BoxGeometry(0.7, 0.04, 0.04);
-      const sl = new THREE.Mesh(slat, ventMat);
+      const sl = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.04, 0.04), ventMat);
       sl.position.set(0.5, -1.8 + i * 0.1, -0.62);
       g.add(sl);
     }
 
-    const baseGeo = new THREE.BoxGeometry(1.82, 0.1, 1.26);
     const base = new THREE.Mesh(
-      baseGeo,
+      new THREE.BoxGeometry(1.82, 0.1, 1.26),
       new THREE.MeshStandardMaterial({ color: 0xe0e4e8, metalness: 0.1, roughness: 0.5 })
     );
     base.position.y = -2.25;
     g.add(base);
 
-    [[-0.7, -0.5], [0.7, -0.5], [-0.7, 0.5], [0.7, 0.5]].forEach(([x, z]) => {
+    ([ [-0.7, -0.5], [0.7, -0.5], [-0.7, 0.5], [0.7, 0.5] ] as [number,number][]).forEach(([x, z]) => {
       const foot = new THREE.Mesh(
         new THREE.CylinderGeometry(0.055, 0.065, 0.05, 10),
         new THREE.MeshStandardMaterial({ color: 0xbbbbbb, roughness: 0.6 })
@@ -528,65 +539,53 @@ function Purifier3D() {
     shadow.position.y = -2.35;
     g.add(shadow);
 
-    const allDrops: Array<{
-      pts: THREE.Points;
-      vel: Array<{ vy: number; life: number }>;
-      count: number;
-      x: number;
-    }> = [];
+    const allDrops: Array<{ pts: THREE.Points; vel: Array<{ vy: number; life: number }>; count: number; x: number }> = [];
 
     indicatorColors.forEach(({ x, col }) => {
       const count = 15;
       const pos = new Float32Array(count * 3);
       const vel: Array<{ vy: number; life: number }> = [];
       for (let i = 0; i < count; i++) {
-        pos[i * 3] = x;
-        pos[i * 3 + 1] = 0.95;
-        pos[i * 3 + 2] = 0.82;
+        pos[i * 3] = x; pos[i * 3 + 1] = 0.95; pos[i * 3 + 2] = 0.82;
         vel.push({ vy: -0.016 - Math.random() * 0.012, life: Math.random() });
       }
       const geo = new THREE.BufferGeometry();
       geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-      const mat = new THREE.PointsMaterial({
-        color: col,
-        size: 0.035,
-        transparent: true,
-        opacity: 0.65,
-        sizeAttenuation: true,
-      });
-      const pts = new THREE.Points(geo, mat);
+      const pts = new THREE.Points(geo, new THREE.PointsMaterial({ color: col, size: 0.035, transparent: true, opacity: 0.65, sizeAttenuation: true }));
       g.add(pts);
       allDrops.push({ pts, vel, count, x });
     });
 
-    // === INTERACTION — full 360° rotation ===
     let drag = false, pX = 0, pY = 0, rotY = 0.3, rotX = 0.05, autoR = true;
+    let touchStartedOnCanvas = false;
 
     const handleMouseDown = (e: MouseEvent) => { drag = true; autoR = false; pX = e.clientX; pY = e.clientY; };
-    const handleTouchStart = (e: TouchEvent) => { drag = true; autoR = false; pX = e.touches[0].clientX; pY = e.touches[0].clientY; };
+    const handleTouchStart = (e: TouchEvent) => {
+      touchStartedOnCanvas = true;
+      drag = true; autoR = false;
+      pX = e.touches[0].clientX; pY = e.touches[0].clientY;
+    };
     const handleMouseUp = () => { drag = false; setTimeout(() => (autoR = true), 4000); };
-    const handleTouchEnd = () => { drag = false; setTimeout(() => (autoR = true), 4000); };
+    const handleTouchEnd = () => { touchStartedOnCanvas = false; drag = false; setTimeout(() => (autoR = true), 4000); };
     const handleMouseMove = (e: MouseEvent) => {
       if (!drag) return;
-      rotY += (e.clientX - pX) * 0.01;
-      rotX += (e.clientY - pY) * 0.01;
-      pX = e.clientX;
-      pY = e.clientY;
+      rotY += (e.clientX - pX) * 0.01; rotX += (e.clientY - pY) * 0.01;
+      pX = e.clientX; pY = e.clientY;
     };
     const handleTouchMove = (e: TouchEvent) => {
+      if (!touchStartedOnCanvas) return;
+      e.preventDefault();
       if (!drag) return;
-      rotY += (e.touches[0].clientX - pX) * 0.01;
-      rotX += (e.touches[0].clientY - pY) * 0.01;
-      pX = e.touches[0].clientX;
-      pY = e.touches[0].clientY;
+      rotY += (e.touches[0].clientX - pX) * 0.01; rotX += (e.touches[0].clientY - pY) * 0.01;
+      pX = e.touches[0].clientX; pY = e.touches[0].clientY;
     };
 
     canvas.addEventListener('mousedown', handleMouseDown);
-    canvas.addEventListener('touchstart', handleTouchStart);
+    canvas.addEventListener('touchstart', handleTouchStart, { passive: false });
     window.addEventListener('mouseup', handleMouseUp);
     window.addEventListener('touchend', handleTouchEnd);
     window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('touchmove', handleTouchMove);
+    canvas.addEventListener('touchmove', handleTouchMove, { passive: false });
 
     let T = 0;
     const animate = () => {
@@ -622,7 +621,7 @@ function Purifier3D() {
       window.removeEventListener('mouseup', handleMouseUp);
       window.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('touchmove', handleTouchMove);
+      canvas.removeEventListener('touchmove', handleTouchMove);
     };
   }, []);
 
