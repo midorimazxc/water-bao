@@ -1,6 +1,9 @@
 import { serve } from "https://deno.land/std/http/server.ts";
+import { config } from "https://deno.land/std/dotenv/mod.ts";
 
-serve(async (req) => {
+/// <reference lib="deno.window" />
+
+serve(async (req: { method: string; json: () => PromiseLike<{ message: any; }> | { message: any; }; }) => {
   // ✅ CORS headers
   const headers = {
     "Access-Control-Allow-Origin": "*",

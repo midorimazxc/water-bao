@@ -76,7 +76,17 @@ export default function Hero() {
             Оставить заявку
           </button>
 
-          <button className="btn-g">Наши продукты</button>
+          <button
+  className="btn-p"
+  onClick={() => {
+    const el = document.getElementById('products');
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth' });
+    }
+  }}
+>
+  Наши продукты
+</button>
         </div>
       </div>
 

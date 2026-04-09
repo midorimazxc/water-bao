@@ -17,7 +17,17 @@
   --sans:'Outfit',sans-serif;
   --glow:0 0 40px rgba(0,200,255,.18);
 }
-html{scroll-behavior:smooth;overflow-x:hidden;cursor:none}
+html {
+  scroll-behavior: smooth;
+  overflow-x: hidden;
+}
+
+/* ТОЛЬКО ДЛЯ ПК */
+@media (hover: hover) and (pointer: fine) {
+  html {
+    cursor: none;
+  }
+}
 body{background:var(--ink);color:var(--ice);font-family:var(--sans);font-weight:300;overflow-x:hidden}
 
 #cursor{
@@ -465,6 +475,70 @@ footer{
 .reveal2{opacity:0;transform:translateY(36px);transition:opacity .9s .12s ease,transform .9s .12s ease}
 .reveal2.on{opacity:1;transform:none}
 
+/* === СОЦ СЕТИ В ФУТЕРЕ === */
+.social-footer {
+  margin-top: 2.5rem;
+  display: flex;
+  gap: 14px;
+}
+
+/* ссылки (например Instagram) */
+.social-footer a {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+  font-size: 18px;
+
+  color: var(--cyan);
+  text-decoration: none;
+
+  background: var(--glass);
+  border: 1px solid var(--border);
+
+  backdrop-filter: blur(10px);
+
+  transition: all .3s ease;
+}
+
+.social-footer a:hover {
+  transform: translateY(-4px) scale(1.1);
+  background: linear-gradient(135deg,var(--cyan),var(--teal));
+  color: var(--ink);
+  border-color: transparent;
+}
+
+/* кнопки (модалки) */
+.social-footer button {
+  width: 44px;
+  height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+  font-size: 18px;
+
+  color: var(--cyan);
+  background: var(--glass);
+  border: 1px solid var(--border);
+
+  backdrop-filter: blur(10px);
+
+  cursor: pointer;
+  transition: all .3s ease;
+}
+
+.social-footer button:hover {
+  transform: translateY(-4px) scale(1.1);
+  background: linear-gradient(135deg,var(--cyan),var(--teal));
+  color: var(--ink);
+  border-color: transparent;
+}
+
 @media(max-width:960px){
   nav,footer,.fbot,.pad{padding-left:1.8rem;padding-right:1.8rem}
   .nav-links{display:none}
@@ -474,4 +548,29 @@ footer{
   footer{grid-template-columns:1fr 1fr}
   .hero-title{font-size:3rem}
   .how-flow::before{display:none}
+  
+}
+
+@media (hover: none) and (pointer: coarse) {
+  #cursor,
+  #cursor-ring {
+    display: none !important;
+  }
+
+  html {
+    cursor: auto !important;
+  }
+}
+
+/* ОТКЛЮЧАЕМ КАСТОМНЫЙ КУРСОР НА ТЕЛЕФОНАХ */
+@media (hover: none) and (pointer: coarse) {
+  #cursor,
+  #cursor-ring {
+    display: none !important;
+  }
+
+  html,
+  body {
+    cursor: auto !important;
+  }
 }

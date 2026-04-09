@@ -28,36 +28,47 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
   return (
     <div style={overlay} onClick={onClose}>
       <div style={modal} onClick={(e) => e.stopPropagation()}>
-        <button style={closeBtn} onClick={onClose}>✕</button>
+        <button
+          style={closeBtn}
+          onClick={onClose}
+          onMouseEnter={(e) => (e.currentTarget.style.color = "#00c8ff")}
+          onMouseLeave={(e) => (e.currentTarget.style.color = "#aaa")}
+        >
+          ✕
+        </button>
+
         {children}
       </div>
     </div>
   );
 }
 
+/* === СТИЛИ === */
+
 const overlay: React.CSSProperties = {
   position: "fixed",
   inset: 0,
   background: "rgba(5, 15, 30, 0.85)",
-  backdropFilter: "blur(8px)",
+  backdropFilter: "blur(10px)",
   display: "flex",
   alignItems: "center",
   justifyContent: "center",
   zIndex: 999,
-  animation: "fadeIn 0.3s ease",
+  animation: "fadeIn 0.25s ease",
 };
 
 const modal: React.CSSProperties = {
   background: "linear-gradient(145deg, #061a2b, #0b2a44)",
   padding: "30px",
-  borderRadius: "18px",
+  borderRadius: "20px",
   width: "100%",
   maxWidth: "420px",
   position: "relative",
-  boxShadow: "0 20px 80px rgba(0, 200, 255, 0.15)",
+  boxShadow: "0 25px 100px rgba(0, 200, 255, 0.2)",
   border: "1px solid rgba(0, 200, 255, 0.2)",
   color: "#fff",
-  animation: "scaleIn 0.3s ease",
+  animation: "scaleIn 0.25s ease",
+  transform: "translateY(0)",
 };
 
 const closeBtn: React.CSSProperties = {
@@ -69,4 +80,5 @@ const closeBtn: React.CSSProperties = {
   color: "#aaa",
   fontSize: "20px",
   cursor: "pointer",
+  transition: "0.3s",
 };
