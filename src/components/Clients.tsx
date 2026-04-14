@@ -1,6 +1,13 @@
 import { useEffect, useRef } from 'react';
 
+// Импортируйте изображения (замените пути на ваши файлы)
+import schoolImage from '../assets/school.jpg';
+import hospitalImage from '../assets/hospital.jpg';
+import officeImage from '../assets/office.jpg';
+import governmentImage from '../assets/government.jpg';
+
 function ClientCanvas({ hue }: { hue: number }) {
+  // Код ClientCanvas оставляем, если хотите сохранить анимацию как фон
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -42,6 +49,38 @@ function ClientCanvas({ hue }: { hue: number }) {
   return <canvas ref={canvasRef} className="client-canvas"></canvas>;
 }
 
+// Массив данных клиентов
+const clients = [
+  {
+    tag: 'Образование',
+    title: 'Школы и университеты',
+    text: 'Фонтанчики в коридорах, пурификаторы в столовых.',
+    image: schoolImage,
+    hue: 200,
+  },
+  {
+    tag: 'Здравоохранение',
+    title: 'Больницы и клиники',
+    text: 'Медицинская чистота воды в палатах и зонах ожидания.',
+    image: hospitalImage,
+    hue: 160,
+  },
+  {
+    tag: 'Бизнес',
+    title: 'Офисы и бизнес-центры',
+    text: 'Забота о сотрудниках. Идеально для ESG-стратегии.',
+    image: officeImage,
+    hue: 220,
+  },
+  {
+    tag: 'Госсектор',
+    title: 'Госучреждения и мэрии',
+    text: 'Долгосрочные сервисные контракты. Полная документация.',
+    image: governmentImage,
+    hue: 35,
+  },
+];
+
 export default function Clients() {
   return (
     <section id="clients" className="pad">
@@ -55,42 +94,20 @@ export default function Clients() {
           </h2>
         </div>
         <div className="clients-grid">
-          <div className="client-card reveal">
-            <ClientCanvas hue={200} />
-            <div className="client-overlay"></div>
-            <div className="client-content">
-              <span className="client-tag">Образование</span>
-              <div className="client-title">Школы и университеты</div>
-              <p className="client-text">Фонтанчики в коридорах, пурификаторы в столовых.</p>
+          {clients.map((client, index) => (
+            <div key={index} className={`client-card ${index % 2 === 0 ? 'reveal' : 'reveal2'}`}>
+              {/* Заменяем ClientCanvas на изображение */}
+              <img src={client.image} alt={client.title} className="client-image" />
+              {/* Если хотите сохранить анимацию как фон, оставьте ClientCanvas */}
+              {/* <ClientCanvas hue={client.hue} /> */}
+              <div className="client-overlay"></div>
+              <div className="client-content">
+                <span className="client-tag">{client.tag}</span>
+                <div className="client-title">{client.title}</div>
+                <p className="client-text">{client.text}</p>
+              </div>
             </div>
-          </div>
-          <div className="client-card reveal2">
-            <ClientCanvas hue={160} />
-            <div className="client-overlay"></div>
-            <div className="client-content">
-              <span className="client-tag">Здравоохранение</span>
-              <div className="client-title">Больницы и клиники</div>
-              <p className="client-text">Медицинская чистота воды в палатах и зонах ожидания.</p>
-            </div>
-          </div>
-          <div className="client-card reveal">
-            <ClientCanvas hue={220} />
-            <div className="client-overlay"></div>
-            <div className="client-content">
-              <span className="client-tag">Бизнес</span>
-              <div className="client-title">Офисы и бизнес-центры</div>
-              <p className="client-text">Забота о сотрудниках. Идеально для ESG-стратегии.</p>
-            </div>
-          </div>
-          <div className="client-card reveal2">
-            <ClientCanvas hue={35} />
-            <div className="client-overlay"></div>
-            <div className="client-content">
-              <span className="client-tag">Госсектор</span>
-              <div className="client-title">Госучреждения и мэрии</div>
-              <p className="client-text">Долгосрочные сервисные контракты. Полная документация.</p>
-            </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>

@@ -15,11 +15,16 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
     };
 
     document.addEventListener("keydown", handleKey);
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalHtmlOverflow = document.documentElement.style.overflow;
+
     document.body.style.overflow = "hidden";
+    document.documentElement.style.overflow = "hidden";
 
     return () => {
       document.removeEventListener("keydown", handleKey);
-      document.body.style.overflow = "auto";
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalHtmlOverflow;
     };
   }, [isOpen, onClose]);
 
@@ -27,7 +32,7 @@ export default function Modal({ isOpen, onClose, children }: ModalProps) {
 
   return (
     <div style={overlay} onClick={onClose}>
-      <div style={modal} onClick={(e) => e.stopPropagation()}>
+      <div className="modal" style={modal} onClick={(e) => e.stopPropagation()}>
         <button
           style={closeBtn}
           onClick={onClose}
@@ -63,6 +68,9 @@ const modal: React.CSSProperties = {
   borderRadius: "20px",
   width: "100%",
   maxWidth: "420px",
+  maxHeight: "80vh",
+  overflowY: "auto",
+  overflowX: "hidden",
   position: "relative",
   boxShadow: "0 25px 100px rgba(0, 200, 255, 0.2)",
   border: "1px solid rgba(0, 200, 255, 0.2)",

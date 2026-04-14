@@ -15,6 +15,7 @@ import FAQ from './components/FAQ';
 import Footer from './components/Footer';
 import { useCustomCursor } from './hooks/useCustomCursor';
 import { useScrollReveal } from './hooks/useScrollReveal';
+import ComparisonSection from './components/ComparisonSection';
 
 function App() {
   useCustomCursor();
@@ -36,6 +37,8 @@ function App() {
       <Installation />
       <div className="divider"></div>
       <Clients />
+      <div className="divider"></div>
+      <ComparisonSection/>
       <div className="divider"></div>
       <Compare />
       <div className="divider"></div>

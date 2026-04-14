@@ -20,7 +20,7 @@ export default function Footer() {
           </p>
 
           {/* СОЦ КНОПКИ */}
-          <div className="social-footer">
+          <div id="contact" className="social-footer">
 <a 
   href="https://www.instagram.com/rafffff._.s/" 
   target="_blank" 
