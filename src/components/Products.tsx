@@ -728,14 +728,14 @@ export default function Products() {
 
   {/* ВИДЕО */}
   <div style={{ marginTop: 20 }}>
-    <iframe
-      width="100%"
-      height="260"
-      src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-      title="Видео"
-      frameBorder="0"
-      allowFullScreen
-    />
+<video
+  width="100%"
+  height="260"
+  controls
+  style={{ borderRadius: 8, objectFit: "cover" }}
+>
+  <source src="https://dpbyblauovgdabyyrfai.supabase.co/storage/v1/object/public/video/fontanchik.mp4" type="video/mp4" />
+</video>
   </div>
 
   <ul style={{ marginTop: 20, color: "#9fc0d4" }}>
@@ -755,14 +755,14 @@ export default function Products() {
 
   {/* ВИДЕО */}
   <div style={{ marginTop: 20 }}>
-    <iframe
-      width="100%"
-      height="260"
-      src="https://www.youtube.com/embed/dQw4w9WgXcQ"
-      title="Видео"
-      frameBorder="0"
-      allowFullScreen
-    />
+<video
+  width="100%"
+  height="260"
+  controls
+  style={{ borderRadius: 8, objectFit: "cover" }}
+>
+  <source src="https://dpbyblauovgdabyyrfai.supabase.co/storage/v1/object/public/video/purifaer.mp4" type="video/mp4" />
+</video>
   </div>
 
   <ul style={{ marginTop: 20, color: "#9fc0d4" }}>
