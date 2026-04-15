@@ -19,8 +19,8 @@ if (!rawCtx) return;
 
 const ctx: CanvasRenderingContext2D = rawCtx;
 
-    const W = 380;
-    const H = 570;
+    const W = 520;
+    const H = 780;
 
     const CX = W / 2;
     const CR_TOP = 20;
@@ -769,15 +769,20 @@ const ctx: CanvasRenderingContext2D = rawCtx;
           color: rgba(255, 255, 255, 0.8);
         }
 
-        .pills {
-          display: flex;
-          gap: 8px;
-          justify-content: center;
-          flex-wrap: wrap;
-          margin-top: 16px;
-        }
+.pills {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
 
         .pill {
+        position: absolute;
+pointer-events: auto;
+z-index: 10;
+
           font-size: 11px;
           padding: 4px 12px;
           border-radius: 20px;
@@ -797,6 +802,26 @@ const ctx: CanvasRenderingContext2D = rawCtx;
           background: rgba(0, 229, 149, 0.15);
           color: #00e595;
           border-color: rgba(0, 229, 149, 0.35);
+
+          .pill:nth-child(1) {
+  top: 120px;
+  left: 60px;
+}
+
+.pill:nth-child(2) {
+  top: 120px;
+  right: 60px;
+}
+
+.pill:nth-child(3) {
+  bottom: 120px;
+  left: 60px;
+}
+
+.pill:nth-child(4) {
+  bottom: 120px;
+  right: 60px;
+}
         }
       `}</style>
 
@@ -856,10 +881,13 @@ const ctx: CanvasRenderingContext2D = rawCtx;
               className="pill"
             >
               4 · УФ-стерилизация
+
+              
             </div>
           </div>
         </div>
       </section>
     </>
+    
   );
 }
