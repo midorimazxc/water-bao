@@ -1,27 +1,33 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Calculator, TrendingDown, CheckCircle, X } from "lucide-react";
 
 const ComparisonSection = () => {
   const [teamSize, setTeamSize] = useState<string>("");
+  // Добавляем состояние для отслеживания мобильной версии
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth <= 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const avgWeight = 70;
   const bottlePrice = 1100;
-  const bottleVolume = 19; // литров
-  const purifierCost = 4;  // ₸/л (фиксированная цена)
+  const bottleVolume = 19;
+  const purifierCost = 4;
   
-  // Фиксированная цена за литр (не зависит от количества людей)
   const dispenserPricePerLiter = bottlePrice / bottleVolume;
-
   const teamSizeNum = Number(teamSize) || 0;
-
   const dailyWaterPerPerson = (avgWeight * 30) / 1000;
   const monthlyWaterPerPerson = dailyWaterPerPerson * 22;
   const totalMonthlyWater = monthlyWaterPerPerson * teamSizeNum;
   const bottlesNeeded = Math.ceil(totalMonthlyWater / 19);
-
   const dispenserCost = bottlesNeeded * bottlePrice;
   const purifierTotalCost = totalMonthlyWater * purifierCost;
   const monthlySavings = Math.max(0, dispenserCost - purifierTotalCost);
-  const savingsPercent = dispenserCost > 0 ? Math.round((monthlySavings / dispenserCost) * 79) : 0;
+  const savingsPercent = dispenserCost > 0 ? Math.round((monthlySavings / dispenserCost) * 100) : 0;
 
   const formatOrDash = (val: number | string, opts?: Intl.NumberFormatOptions) => {
     if (!teamSizeNum) return "—";
@@ -69,11 +75,15 @@ const ComparisonSection = () => {
   };
 
   return (
-    <section className="pad">
+    <section className="pad" style={{ padding: isMobile ? '3rem 1rem' : undefined }}>
       <div className="wrap">
-        <div style={{ textAlign: 'center', maxWidth: '560px', margin: '0 auto 5rem' }} className="reveal">
+        <div style={{ 
+          textAlign: 'center', 
+          maxWidth: '560px', 
+          margin: isMobile ? '0 auto 3rem' : '0 auto 5rem' 
+        }} className="reveal">
           <span className="sec-tag">Калькулятор</span>
-          <h2 className="sec-h2">
+          <h2 className="sec-h2" style={{ fontSize: isMobile ? '1.8rem' : undefined }}>
             Докажем вам выгоду
             <br />
             <em>пурифайера</em>
@@ -82,14 +92,14 @@ const ComparisonSection = () => {
 
         {/* Input */}
         <div style={{
-          padding: '2rem',
+          padding: isMobile ? '1.5rem' : '2rem',
           borderRadius: '20px',
           border: '1px solid rgba(0,200,255,.15)',
           background: 'rgba(0,200,255,.03)',
           backdropFilter: 'blur(20px)',
-          marginBottom: '4rem',
+          marginBottom: isMobile ? '2.5rem' : '4rem',
           maxWidth: '420px',
-          margin: '0 auto 4rem'
+          margin: `0 auto ${isMobile ? '2.5rem' : '4rem'}`
         }}>
           <label style={{ display: 'block', fontSize: '.7rem', letterSpacing: '.16em', color: '#00c8ff', marginBottom: '1rem', textTransform: 'uppercase', fontWeight: 600 }}>
             {content.calculator.teamSize}
@@ -110,7 +120,7 @@ const ComparisonSection = () => {
               border: '1px solid rgba(0,200,255,.3)',
               background: 'rgba(0,200,255,.06)',
               borderRadius: '10px',
-              fontSize: '1.1rem',
+              fontSize: isMobile ? '1rem' : '1.1rem',
               color: '#f0faff',
               outline: 'none',
               transition: 'all .3s',
@@ -130,17 +140,17 @@ const ComparisonSection = () => {
           />
         </div>
 
-        {/* Сравнение: две колонны */}
+        {/* Сравнение: адаптивная сетка */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: '1fr 1fr',
-          gap: '2.4rem',
-          marginBottom: '4rem',
+          gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+          gap: isMobile ? '1.5rem' : '2.4rem',
+          marginBottom: isMobile ? '2.5rem' : '4rem',
           alignItems: 'start'
         }}>
-          {/* ДИСПЕНСЕР - плохо */}
+          {/* ДИСПЕНСЕР */}
           <div style={{
-            padding: '2.4rem',
+            padding: isMobile ? '1.5rem' : '2.4rem',
             borderRadius: '20px',
             border: '2px solid rgba(255,100,100,.3)',
             background: 'rgba(255,100,100,.05)',
@@ -159,7 +169,7 @@ const ComparisonSection = () => {
               <p style={{ fontSize: '.7rem', color: 'rgba(159,192,212,.5)', marginBottom: '.4rem', textTransform: 'uppercase', letterSpacing: '.1em' }}>
                 Кол-во бутылей
               </p>
-              <p style={{ fontSize: '2rem', fontWeight: 700, color: '#ff6464' }}>
+              <p style={{ fontSize: isMobile ? '1.6rem' : '2rem', fontWeight: 700, color: '#ff6464' }}>
                 {formatOrDash(bottlesNeeded)}
               </p>
             </div>
@@ -169,9 +179,7 @@ const ComparisonSection = () => {
                 Цена за литр
               </p>
               <p style={{ fontSize: '1.3rem', fontWeight: 600, color: '#f0faff' }}>
-                {teamSizeNum
-                  ? `${dispenserPricePerLiter.toFixed(0)} ₸/л`
-                  : "—"}
+                {teamSizeNum ? `${dispenserPricePerLiter.toFixed(0)} ₸/л` : "—"}
               </p>
             </div>
 
@@ -184,23 +192,23 @@ const ComparisonSection = () => {
               <p style={{ fontSize: '.7rem', color: 'rgba(255,100,100,.7)', marginBottom: '.6rem', textTransform: 'uppercase', letterSpacing: '.1em', fontWeight: 500 }}>
                 Ежемесячно
               </p>
-              <p style={{ fontSize: '2.2rem', fontWeight: 700, color: '#ff6464' }}>
+              <p style={{ fontSize: isMobile ? '1.8rem' : '2.2rem', fontWeight: 700, color: '#ff6464' }}>
                 {formatOrDash(dispenserCost)} ₸
               </p>
             </div>
           </div>
 
-          {/* ПУРИФАЙЕР - хорошо */}
+          {/* ПУРИФАЙЕР */}
           <div style={{
-            padding: '2.4rem',
+            padding: isMobile ? '1.5rem' : '2.4rem',
             borderRadius: '20px',
             border: '2px solid rgba(0,229,204,.4)',
             background: 'rgba(0,229,204,.08)',
             backdropFilter: 'blur(16px)',
             position: 'relative',
-            transform: teamSizeNum ? 'scale(1.02)' : 'scale(1)',
+            transform: (teamSizeNum && !isMobile) ? 'scale(1.02)' : 'scale(1)',
             transition: 'all .4s',
-            boxShadow: teamSizeNum ? '0 0 40px rgba(0,229,204,.15)' : 'none'
+            boxShadow: (teamSizeNum && !isMobile) ? '0 0 40px rgba(0,229,204,.15)' : 'none'
           }}>
             <div style={{ position: 'absolute', top: '1rem', right: '1.2rem', color: '#00e5cc', fontSize: '1.2rem' }}>✓</div>
             <h3 style={{ fontSize: '1.4rem', fontFamily: "'Playfair Display',Georgia,serif", fontWeight: 300, color: '#f0faff', marginBottom: '1.8rem' }}>
@@ -211,7 +219,7 @@ const ComparisonSection = () => {
               <p style={{ fontSize: '.7rem', color: 'rgba(159,192,212,.5)', marginBottom: '.4rem', textTransform: 'uppercase', letterSpacing: '.1em' }}>
                 Бутыли не нужны
               </p>
-              <p style={{ fontSize: '2rem', fontWeight: 700, color: '#00e5cc' }}>
+              <p style={{ fontSize: isMobile ? '1.6rem' : '2rem', fontWeight: 700, color: '#00e5cc' }}>
                 0
               </p>
             </div>
@@ -234,48 +242,39 @@ const ComparisonSection = () => {
               <p style={{ fontSize: '.7rem', color: '#00c8ff', marginBottom: '.6rem', textTransform: 'uppercase', letterSpacing: '.1em', fontWeight: 600 }}>
                 Ежемесячно
               </p>
-              <p style={{ fontSize: '2.2rem', fontWeight: 700, color: '#00e5cc' }}>
+              <p style={{ fontSize: isMobile ? '1.8rem' : '2.2rem', fontWeight: 700, color: '#00e5cc' }}>
                 {formatOrDash(purifierTotalCost)} ₸
               </p>
             </div>
           </div>
         </div>
 
-        {/* ВЫИГРЫШ - большой акцент */}
+        {/* ВЫИГРЫШ */}
         {teamSizeNum ? (
           <div style={{
-            padding: '3.2rem 2rem',
+            padding: isMobile ? '2rem 1rem' : '3.2rem 2rem',
             background: 'linear-gradient(135deg, rgba(0,200,255,.12), rgba(0,229,204,.12))',
             border: '2px solid rgba(0,229,204,.3)',
             borderRadius: '24px',
             textAlign: 'center',
-            marginBottom: '4rem',
+            marginBottom: isMobile ? '3rem' : '4rem',
             backdropFilter: 'blur(20px)',
             position: 'relative',
             overflow: 'hidden'
           }}>
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'radial-gradient(circle at 50% 0%, rgba(0,229,204,.08), transparent 70%)',
-              pointerEvents: 'none'
-            }}></div>
-
             <div style={{ position: 'relative', zIndex: 1 }}>
               <p style={{ fontSize: '.75rem', letterSpacing: '.16em', color: '#00c8ff', marginBottom: '1rem', textTransform: 'uppercase', fontWeight: 600 }}>
                 Экономия в месяц
               </p>
-              <p style={{ fontSize: '3.6rem', fontWeight: 800, color: '#00e5cc', marginBottom: '.6rem', lineHeight: 1 }}>
+              <p style={{ fontSize: isMobile ? '2.4rem' : '3.6rem', fontWeight: 800, color: '#00e5cc', marginBottom: '.6rem', lineHeight: 1 }}>
                 {monthlySavings.toLocaleString()} ₸
               </p>
-              <p style={{ fontSize: '1.1rem', color: '#9fc0d4', marginBottom: '1.2rem' }}>
-                Это <strong style={{ color: '#00e5cc', fontSize: '1.3rem' }}>{savingsPercent}%</strong> экономии
+              <p style={{ fontSize: isMobile ? '1rem' : '1.1rem', color: '#9fc0d4', marginBottom: '1.2rem' }}>
+                Это <strong style={{ color: '#00e5cc', fontSize: isMobile ? '1.1rem' : '1.3rem' }}>{savingsPercent}%</strong> экономии
               </p>
               <p style={{ fontSize: '.85rem', color: 'rgba(159,192,212,.8)', lineHeight: 1.8 }}>
                 При коллективе из <strong>{teamSizeNum}</strong> человек пурифайер дешевле на{' '}
+                <br />
                 <strong style={{ color: '#00e5cc' }}>
                   {(monthlySavings * 12).toLocaleString()} ₸ в год
                 </strong>
@@ -284,23 +283,23 @@ const ComparisonSection = () => {
           </div>
         ) : null}
 
-        {/* Основные преимущества */}
-        <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-          <h3 style={{ fontSize: '1.6rem', fontFamily: "'Playfair Display',Georgia,serif", fontWeight: 300, color: '#f0faff', marginBottom: '2rem' }}>
+        {/* Основные преимущества: сетка меняется с 3 в ряд на 1 */}
+        <div style={{ textAlign: 'center', marginBottom: '0.5rem' }}>
+          <h3 style={{ fontSize: isMobile ? '1.4rem' : '1.6rem', fontFamily: "'Playfair Display',Georgia,serif", fontWeight: 300, color: '#f0faff', marginBottom: '2rem' }}>
             Почему пурифайер лучше
           </h3>
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(3, 1fr)',
-            gap: '1.4rem'
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
+            gap: isMobile ? '1rem' : '1.4rem'
           }}>
             {[
               ['💰', 'Дешевле', 'В 10+ раз ниже цена за литр'],
               ['♻️', 'Экологично', 'Ноль пластиковых отходов'],
               ['🚀', 'Удобнее', 'Вода всегда под рукой'],
-              ['💰', 'Дешевле', 'В 10+ раз ниже цена за литр'],
-              ['♻️', 'Экологично', 'Ноль пластиковых отходов'],
-              ['🚀', 'Удобнее', 'Вода всегда под рукой']
+              ['🔧', 'Просто', 'Без логистики и заказов'],
+              ['💎', 'Качество', 'Всегда свежая вода'],
+              ['📊', 'Контроль', 'Мониторинг в реальном времени'],
             ].map((item: any, idx: number) => (
               <div key={idx} style={{
                 padding: '1.6rem',
